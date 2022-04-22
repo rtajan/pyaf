@@ -81,12 +81,31 @@ get_N_fil() const
 }
 
 template <typename R>
+template <class AR>
+void Filter<R>::
+filter(const std::vector<R,AR>& X_N1, std::vector<R,AR>& Y_N2, const int frame_id, const bool managed_memory)
+{
+	(*this)["filter::X_N1"].bind(X_N1);
+	(*this)["filter::Y_N2"].bind(Y_N2);
+	(*this)("filter").exec(frame_id, managed_memory);
+}
+
+template <typename R>
 Filter<R>* Filter<R>
 ::clone() const
 {
 	auto m = new Filter(*this);
 	m->deep_copy(*this);
 	return m;
+}
+
+template <typename R>
+void Filter<R>::
+filter(const R *X_N1, R *Y_N2, const int frame_id, const bool managed_memory)
+{
+	(*this)["filter::X_N1"].bind(X_N1);
+	(*this)["filter::Y_N2"].bind(Y_N2);
+	(*this)("filter").exec(frame_id, managed_memory);
 }
 
 template <typename R>
