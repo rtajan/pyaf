@@ -36,4 +36,4 @@ the line
 wraps the constructor for the `Filter` class.
 
 ## Use your custom library
-In python 
+To have an example on how to use the custom modules and the py_AFF3CT modules jointly, see the main notebook [here](src/mains/main.ipynb).
