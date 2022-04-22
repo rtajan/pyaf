@@ -1,0 +1,3 @@
+[submodule "py_aff3ct"]
+	path = py_aff3ct
+	url = https://github.com/aff3ct/py_aff3ct.git
