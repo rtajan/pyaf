@@ -27,9 +27,9 @@ class Filter : public Module, public tools::Interface_reset
 ### Sources the wrapper
 The "glue" between C++ code and Python is contained in `src/cpp/Wrapper/wrapper.cpp`. For example, the `Filter` class is wrapped here
 ```cpp
-	py::class_<aff3ct::module::Filter<float>>(m_filter,"Filter", py_aff3ct_module)		.def(py::init<const int, const int>(), "N"_a, "N_fil"_a);
+py::class_<aff3ct::module::Filter<float>>(m_filter,"Filter", py_aff3ct_module)		.def(py::init<const int, const int>(), "N"_a, "N_fil"_a);
 ```
-The line
+the line
 ```cpp
 .def(py::init<const int, const int>(), "N"_a, "N_fil"_a);
 ```
