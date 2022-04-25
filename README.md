@@ -7,7 +7,6 @@ First, compile py_AFF3CT se documentation [here](py_aff3ct/README.md)
 Compile the custom library:
 
 	$ mkdir build && cd build
-	$ ../configure.py --verbose
 	$ cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-Wall -funroll-loops -march=native -fvisibility=hidden -fvisibility-inlines-hidden -faligned-new"
 	$ make -j4
 
