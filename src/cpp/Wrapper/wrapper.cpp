@@ -13,6 +13,8 @@
 
 #include "Module/Filter/Filter_UPFIR/Filter_UPFIR.hpp"
 
+#include "Module/Upsampling/Upsampling_cplx.hpp"
+
 namespace py = pybind11;
 using namespace py::literals;
 using namespace aff3ct;
@@ -30,6 +32,13 @@ PYBIND11_MODULE(pyaf, m){
 
 	// Import AFF3CT module from py_AFF3CT
 	py::object py_aff3ct_module = (py::object) py::module_::import("py_aff3ct").attr("module").attr("Module");
+
+
+	// Create a submodule, here for upsampling (optionnal)
+	py::module_ m_upsampling = m.def_submodule("upsampling");
+	py::class_<aff3ct::module::Upsampling_cplx>(m_upsampling,"Upsampling_cplx", py_aff3ct_module)
+		.def(py::init<const int, const int>(), "N"_a, "F"_a);
+
 
 	// Create a submodule, here for filter (optionnal)
 	py::module_ m_filter = m.def_submodule("filter");
