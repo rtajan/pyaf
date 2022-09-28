@@ -35,3 +35,46 @@ set_target_properties(pyaf-lib PROPERTIES
 target_link_libraries     (pyaf-lib PRIVATE aff3ct::aff3ct-static-lib)
 target_include_directories(pyaf-lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp)
 target_include_directories(pyaf-lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/py_aff3ct/src)
+
+option(LINK_UHD "Link with the UHD library (used in the radio USRP)" ON)
+if(LINK_UHD)
+    message(STATUS "UHD: on")
+    target_compile_definitions(pyaf-lib PUBLIC
+                               $<BUILD_INTERFACE:LINK_UHD>
+                               $<INSTALL_INTERFACE:LINK_UHD>)
+
+    # Link UHD
+    find_package (UHD REQUIRED)
+    if    (UHD_FOUND)
+        include_directories(${UHD_INCLUDE_DIRS})
+        target_link_libraries(pyaf-lib PRIVATE ${UHD_LIBRARIES})
+    endif (UHD_FOUND)
+
+    # Link Boost
+    find_package(Boost QUIET COMPONENTS system filesystem thread REQUIRED)
+    if (Boost_FOUND)
+        target_link_libraries(pyaf-lib PRIVATE ${Boost_FILESYSTEM_LIBRARY}
+                                               ${Boost_SYSTEM_LIBRARY}
+                                               ${Boost_THREAD_LIBRARY})
+    endif (Boost_FOUND)
+else()
+    message(STATUS "UHD: off")
+endif(LINK_UHD)
+
+option(LINK_FFTW "Link with the FFTW library" ON)
+if(LINK_FFTW)
+    message(STATUS "FFTW: on")
+    find_package(FFTW REQUIRED)
+    find_library(FFTW_LIBRARY NAMES fftw3 fftw, fftw3f)
+
+    if (FFTW_FOUND)
+        target_compile_definitions(pyaf-lib PUBLIC
+                                $<BUILD_INTERFACE:LINK_FFTW>
+                                $<INSTALL_INTERFACE:LINK_FFTW>)
+        include_directories (${FFTW_INCLUDES})
+        target_link_libraries (pyaf-lib PRIVATE ${FFTW_LIBRARIES})
+        message(STATUS "FFTW found")
+    endif (FFTW_FOUND)
+else()
+    message(STATUS "FFTW: off")
+endif(LINK_FFTW)
