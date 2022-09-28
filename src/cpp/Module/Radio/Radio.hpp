@@ -1,0 +1,114 @@
+/*!
+ * \file
+ * \brief Transmit or receive data to or from a radio module.
+ *
+ * \section LICENSE
+ * This file is under MIT license (https://opensource.org/licenses/MIT).
+ */
+#ifndef RADIO_HPP
+#define RADIO_HPP
+
+#include "Tools/Interface/Interface_is_done.hpp"
+#include "Module/Module.hpp"
+
+namespace aff3ct
+{
+namespace module
+{
+	namespace rad
+	{
+		enum class tsk : uint8_t { send, receive, SIZE };
+
+		namespace sck
+		{
+			enum class send    : uint8_t { X_N1, status };
+			enum class receive : uint8_t { OVF, SEQ, CLT, TIM, Y_N1, status };
+		}
+	}
+
+
+/*!
+ * \class Radio
+ *
+ * \brief Transmit or receive data to or from a radio module.
+ *
+ * \tparam R: type of the data to send or receive.
+ *
+ */
+template <typename R = float>
+class Radio : public Module, public Interface_is_done
+{
+public:
+	inline Task&   operator[](const rad::tsk          t) { return Module::operator[]((int)t);                         }
+	inline Socket& operator[](const rad::sck::send    s) { return Module::operator[]((int)rad::tsk::send  )[(int)s];  }
+	inline Socket& operator[](const rad::sck::receive s) { return Module::operator[]((int)rad::tsk::receive)[(int)s]; }
+
+protected:
+	const int N; /*!< Size of one frame (= number of samples in one frame) */
+	std::vector<int32_t> ovf_flags;
+	std::vector<int32_t> seq_flags;
+	std::vector<int32_t> clt_flags;
+	std::vector<int32_t> tim_flags;
+
+	static bool done_flag;
+
+public:
+	/*!
+	 * \brief Constructor.
+	 *
+	 * \param N:     Radio_frame length.
+	 */
+	Radio(const int N);
+
+	/*!
+	 * \brief Destructor.
+	 */
+	virtual ~Radio() = default;
+
+	//virtual int get_K() const;
+
+	/*!
+	 * \brief Send a frame.
+	 *
+	 * \param X_N1 : a vector of complex samples to send.
+	 */
+	template <class A = std::allocator<R>>
+	void send(const std::vector<R,A>& X_N1, const int frame_id = -1, const bool managed_memory = true);
+
+	virtual void send(const R *X_N1, const int frame_id = -1, const bool managed_memory = true);
+
+	/*!
+	 * \brief Receive a frame.
+	 *
+	 * \param Y_N1 : a vector of complex samples to receive.
+	 */
+	template <class A = std::allocator<R>>
+	void receive(std::vector<int32_t>& OVF,
+	             std::vector<int32_t>& SEQ,
+	             std::vector<int32_t>& CLT,
+	             std::vector<int32_t>& TIM,
+	             std::vector<R,A>& Y_N1,
+	             const int frame_id = -1,
+				 const bool managed_memory = true);
+
+	virtual void receive(int32_t *OVF,
+	                     int32_t *SEQ,
+	                     int32_t *CLT,
+	                     int32_t *TIM,
+	                     R *Y_N1,
+	                     const int frame_id = -1,
+						 const bool managed_memory = true);
+
+	virtual void set_n_frames(const size_t n_frames);
+protected:
+	virtual void _send   (const R *X_N1, const int frame_id) = 0;
+	virtual void _receive(      R *Y_N1, const int frame_id) = 0;
+	virtual bool is_done() const;
+	static void signal_handler (int signum);
+
+};
+}
+}
+#include "Radio.hxx"
+
+#endif /* RADIO_HPP */

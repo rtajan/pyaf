@@ -11,12 +11,22 @@
 #include <vector>
 
 #include "Module/Module.hpp"
-#include "Tools/Interface/Interface_reset.hpp"
+#include "Tools/Noise/noise_utils.h"
 
 namespace aff3ct
 {
 namespace module
 {
+	namespace flt
+	{
+		enum class tsk : size_t { filter, SIZE };
+
+		namespace sck
+		{
+			enum class filter : size_t { X_N1, Y_N2, status };
+		}
+	}
+
 /*!
  * \class Filter
  *
@@ -27,8 +37,12 @@ namespace module
  * Please use Filter for inheritance (instead of Filter)
  */
 template <typename R = float>
-class Filter : public Module, public tools::Interface_reset
+class Filter : public Module
 {
+public:
+	inline Task&   operator[](const flt::tsk                 t) { return Module::operator[]((int)t);                        }
+	inline Socket& operator[](const flt::sck::filter         s) { return Module::operator[]((int)flt::tsk::filter)[(int)s]; }
+
 protected:
 	const int N;     /*!< Size of one frame (= number of samples in one frame) */
 	const int N_fil; /*!< Number of samples after the filtering process */
@@ -39,8 +53,9 @@ public:
 	 *
 	 * \param N:        size of one frame (= number of samples in one frame).
 	 * \param N_fil:    number of samples after the filtering process.
+	 * \param n_frames: number of frames to process in the Filter.
 	 */
-	Filter(const int N, const int N_fil);
+	Filter(const int N, const int N_fil, const int n_frames = 1);
 
 	void init_processes();
 
@@ -53,7 +68,7 @@ public:
 
 	int get_N_fil() const;
 
-	virtual void reset();
+	virtual void reset() = 0;
 	/*!
 	 * \brief Filters a vector of samples.
 	 *
@@ -63,18 +78,15 @@ public:
 	 * \param Y_N2: a filtered vector.
 	 */
 	template <class AR = std::allocator<R>>
-	void filter(const std::vector<R,AR>& X_N1, std::vector<R,AR>& Y_N2, const int frame_id = -1, const bool managed_memory = true);
+	void filter(const std::vector<R,AR>& X_N1, std::vector<R,AR>& Y_N2, const int frame_id = -1);
 
-	void filter(const R *X_N1, R *Y_N2, const int frame_id = -1, const bool managed_memory = true);
+	virtual void filter(const R *X_N1, R *Y_N2, const int frame_id = -1);
 
-	virtual void step  (const R *X_elt, R *Y_elt);
-
-	virtual Filter<R>* clone() const;
 protected:
 	virtual void _filter(const R *X_N1,  R *Y_N2, const int frame_id);
-	virtual void _reset ();
 };
 }
 }
+#include "Filter.hxx"
 
 #endif /* FILTER_HPP_ */
